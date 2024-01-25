@@ -29,8 +29,27 @@ app.post("/Signup", async (req,res)=>{
         res.send("Username already exixts. Please try another.");
     }
     else{
+        const saltRounds=10;
+        const hashedPassword= await bcrypt.hash(data.password, saltRounds);
+        data.password=hashedPassword;
         const userdata= await collection.insertMany(data);
         console.log(userdata);
+    }
+});
+app.post("/Login", async (req,res)=>{
+    try{
+        const check= await collection.findOne({name: req.body.username});
+        if(check){
+            res.send("User cannot found");
+        }
+        const isPasswordMatch= await bcrypt.compare(req.body.password,check.password);
+        if(isPasswordMatch){
+            res.render("home");
+        }else{
+            req.send("Wrong Password");
+        }
+    }catch{
+        res.send("Wrong details");
     }
 });
 
